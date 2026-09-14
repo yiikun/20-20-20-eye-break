@@ -24,16 +24,6 @@ Chrome 扩展，基于「20-20-20 护眼法则」帮助用户保护视力。
 3. 点击「加载已解压的扩展程序」
 4. 选择本项目的 `extension` 文件夹
 
-## 开发
-
-```bash
-# 查看项目结构
-ls -la extension/
-
-# 测试修改
-# 编辑 extension/js/*.js 后在 chrome://extensions 重新加载
-```
-
 ## 技术栈
 
 - Chrome Extension Manifest V3
@@ -49,4 +39,8 @@ ls -la extension/
 
 ## 许可证
 
-MIT License
+MIT License — 欢迎 fork、学习和贡献。
+
+## 仓库
+
+https://github.com/yiikun/20-20-20-eye-break
