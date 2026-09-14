@@ -17,3 +17,9 @@ build/
 
 # Logs
 *.log
+
+# Internal
+docs/
+*.zip
+*real.png
+
