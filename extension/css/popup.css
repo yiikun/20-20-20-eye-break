@@ -1,0 +1,287 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 320px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 16px;
+  background: #f5f5f7;
+  color: #333;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+h1 {
+  font-size: 24px;
+  text-align: center;
+  color: #1a1a2e;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 12px;
+  color: #888;
+  margin-top: -8px;
+  margin-bottom: 4px;
+}
+
+/* 倒计时卡片 */
+.countdown-card {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  color: white;
+}
+
+.countdown-label {
+  font-size: 12px;
+  color: #aaa;
+  margin-bottom: 4px;
+}
+
+.countdown-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: #4fc3f7;
+  font-variant-numeric: tabular-nums;
+}
+
+.countdown-hint {
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.stats-card {
+  display: flex;
+  gap: 12px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 28px;
+  font-weight: 700;
+  color: #4fc3f7;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #888;
+}
+
+.settings {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.setting-row:not(:last-child) {
+  border-bottom: 1px solid #eee;
+}
+
+.setting-row label {
+  font-size: 14px;
+  color: #555;
+}
+
+.setting-row input {
+  width: 60px;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.toggles {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.toggle-row span {
+  font-size: 14px;
+  color: #555;
+}
+
+/* Switch 样式 */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .3s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #4fc3f7;
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+.save-btn {
+  width: 100%;
+  padding: 12px;
+  background: #4fc3f7;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.save-btn:hover {
+  background: #29b6f6;
+}
+
+/* 赞助区 */
+.sponsor-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.sponsor-label {
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.sponsor-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%);
+  border-radius: 8px;
+  color: white;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.sponsor-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79,195,247,0.4);
+}
+
+.sponsor-arrow {
+  font-size: 16px;
+  opacity: 0.8;
+}
+
+.sponsor-hint {
+  font-size: 10px;
+  color: #aaa;
+  text-align: center;
+  margin-top: 6px;
+}
+
+/* 暗黑模式 */
+body.dark {
+  background: #1a1a2e;
+  color: #eee;
+}
+
+body.dark h1 {
+  color: #eee;
+}
+
+body.dark .stats-card,
+body.dark .settings,
+body.dark .toggles {
+  background: #16213e;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+body.dark .setting-row label,
+body.dark .toggle-row span {
+  color: #bbb;
+}
+
+body.dark .setting-row:not(:last-child) {
+  border-bottom-color: #2a2a4a;
+}
+
+body.dark .setting-row input {
+  background: #0f3460;
+  border-color: #2a2a4a;
+  color: #eee;
+}
+
+body.dark .sponsor-card {
+  background: #16213e;
+}
+
+body.dark .sponsor-hint {
+  color: #666;
+}

@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+._*
+
+# Node
+node_modules/
+
+# Build
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>20-20-20 护眼提醒</title>
+  <link rel="stylesheet" href="css/popup.css">
+</head>
+<body>
+  <div class="container">
+    <h1>👀 20-20-20</h1>
+    <p class="subtitle">护眼提醒 · 视力守护</p>
+
+    <!-- 倒计时状态 -->
+    <div class="countdown-card" id="countdown-card">
+      <div class="countdown-label">距离下次休息</div>
+      <div class="countdown-value" id="countdown-value">--:--</div>
+      <div class="countdown-hint">正在专注工作中...</div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="stats-card">
+      <div class="stat-item">
+        <span class="stat-value" id="today-count">0</span>
+        <span class="stat-label">今日休息</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="streak">0</span>
+        <span class="stat-label">连续天数</span>
+      </div>
+    </div>
+
+    <!-- 设置区域 -->
+    <div class="settings">
+      <div class="setting-row">
+        <label>工作时长（分钟）</label>
+        <input type="number" id="work-minutes" value="20" min="1" max="120">
+      </div>
+      <div class="setting-row">
+        <label>休息时长（秒）</label>
+        <input type="number" id="rest-seconds" value="20" min="5" max="120">
+      </div>
+      <div class="setting-row">
+        <label>远眺距离（英尺）</label>
+        <input type="number" id="focus-distance" value="20" min="10" max="100">
+      </div>
+    </div>
+
+    <!-- 开关 -->
+    <div class="toggles">
+      <div class="toggle-row">
+        <span>桌面通知</span>
+        <label class="switch">
+          <input type="checkbox" id="enable-notification" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="toggle-row">
+        <span>提示音</span>
+        <label class="switch">
+          <input type="checkbox" id="enable-sound" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="toggle-row">
+        <span>暗黑模式</span>
+        <label class="switch">
+          <input type="checkbox" id="dark-mode">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <!-- <div class="toggle-row">
+        <span>显示赞助推荐</span>
+        <label class="switch">
+          <input type="checkbox" id="show-sponsor" checked>
+          <span class="slider"></span>
+        </label>
+      </div> -->
+    </div>
+
+    <button id="save-btn" class="save-btn">💾 保存设置</button>
+
+    <!-- <div class="sponsor-card">
+      <div class="sponsor-label">👁️ 护眼好物推荐</div>
+      <a class="sponsor-link" href="#" target="_blank" rel="noopener noreferrer sponsored">
+        <span class="sponsor-product">屏幕挂灯 · 护眼台灯</span>
+        <span class="sponsor-arrow">→</span>
+      </a>
+      <div class="sponsor-hint">点击了解，支持我们继续开发</div>
+    </div> -->
+  </div>
+
+  <script src="js/popup.js"></script>
+</body>
+</html>
