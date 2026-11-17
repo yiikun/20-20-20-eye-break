@@ -63,7 +63,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
       showNotification(settings);
       incrementBreakCount();
       clearBadge();
-      showOverlayToAllTabs(settings);
+      showOverlayToAllTabs();
       startRestTimer(settings);
     });
   } else if (alarm.name === 'eye-break-rest') {
@@ -114,7 +114,7 @@ function startRestTimer(settings, skipSettingsSync = false) {
 
 // 同步写入 storage（在同一个回调里完成，避免时序问题）
 function saveStateSync(remainingSeconds, startTime, endTime) {
-  chrome.storage.local.set({ [STORAGE_KEY]: { remainingSeconds, startTime, endTime } }, () => {
+  chrome.storage.local.set({ [STORAGE_KEY]: { remainingSeconds, startTime, endTime, restSeconds: remainingSeconds } }, () => {
     console.log(`[bg] state saved: remaining=${remainingSeconds}, endTime=${new Date(endTime).toISOString()}`);
   });
 }
@@ -127,6 +127,8 @@ function showOverlayToAllTabs() {
   chrome.tabs.query({}, (tabs) => {
     console.log(`[bg] showing overlay to ${tabs.length} tabs`);
     for (const tab of tabs) {
+      // 跳过 popup/新标签页等扩展内部页面
+      if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) continue;
       chrome.tabs.sendMessage(tab.id, { action: 'SHOW_OVERLAY' }, (response) => {
         if (chrome.runtime.lastError) {
           console.log(`[bg] tab ${tab.id}: ${chrome.runtime.lastError.message}`);
@@ -197,7 +199,14 @@ function incrementBreakCount() {
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'RESTART_TIMER') {
+  // 忽略来自 popup/content script 的非预期消息
+  if (sender && sender.id !== chrome.runtime.id) return;
+  if (message.action === 'EARLY_DONE') {
+    console.log('[bg] EARLY_DONE received');
+    chrome.storage.sync.get(defaultSettings, (settings) => {
+      startWorkTimer(settings);
+    });
+  } else if (message.action === 'RESTART_TIMER') {
     console.log('[bg] RESTART_TIMER received');
     chrome.storage.sync.get(defaultSettings, (settings) => {
       startWorkTimer(settings);
