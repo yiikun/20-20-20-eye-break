@@ -7,6 +7,67 @@
 const STORAGE_KEY = 'timer_state';
 const PHASE_KEY   = 'timer_phase';
 
+// ─── Google Analytics 4 (Measurement Protocol) ────────────────────
+const GA_MEASUREMENT_ID = 'G-TQYH78Q5C0';
+const GA_API_SECRET = ''; // 可选：如果有 secret key
+
+// 生成随机客户端 ID（与标准 UA/GA4 格式一致）
+function generateClientId() {
+  const hexDigits = '0123456789abcdef';
+  let result = '';
+  for (let i = 0; i < 32; i++) {
+    if (i === 8 || i === 12 || i === 16 || i === 20) result += '-';
+    result += hexDigits[Math.floor(Math.random() * 16)];
+  }
+  return result;
+}
+
+// 从 storage 获取或创建 clientId
+async function getClientId() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get('ga_client_id', (data) => {
+      if (data.ga_client_id) {
+        resolve(data.ga_client_id);
+      } else {
+        const newId = generateClientId();
+        chrome.storage.local.set({ ga_client_id: newId }, () => resolve(newId));
+      }
+    });
+  });
+}
+
+// 发送 GA4 事件（使用 Measurement Protocol）
+async function trackEvent(eventName, params = {}) {
+  try {
+    const clientId = await getClientId();
+    const url = `https://www.google-analytics.com/mp/collect?measurement_id=${GA_MEASUREMENT_ID}&api_secret=${GA_API_SECRET}`;
+    const payload = {
+      client_id: clientId,
+      events: [{
+        name: eventName,
+        params: {
+          ...params,
+          session_type: '1' // first visit
+        }
+      }]
+    };
+    // use sendBeacon 如果可用（页面卸载时也能发送），否则用 fetch
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(url, JSON.stringify(payload));
+    } else {
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true
+      }).catch(() => {});
+    }
+    console.log(`[ga] tracked: ${eventName}`, params);
+  } catch (e) {
+    console.error('[ga] track error:', e);
+  }
+}
+
 const defaultSettings = {
   workMinutes: 20,
   restSeconds: 20,
@@ -48,6 +109,7 @@ chrome.storage.local.get([STORAGE_KEY, PHASE_KEY], (data) => {
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log('[bg] onInstalled');
+  trackEvent('extension_installed', { version: chrome.runtime.getManifest().version });
   chrome.storage.sync.get(defaultSettings, (settings) => {
     startWorkTimer(settings);
   });
@@ -65,11 +127,13 @@ chrome.alarms.onAlarm.addListener((alarm) => {
       clearBadge();
       showOverlayToAllTabs();
       startRestTimer(settings);
+      trackEvent('break_started', { work_minutes: settings.workMinutes });
     });
   } else if (alarm.name === 'eye-break-rest') {
     console.log('[bg] rest phase done → restarting work phase');
     chrome.storage.sync.get(defaultSettings, (settings) => {
       startWorkTimer(settings);
+      trackEvent('break_completed', { rest_seconds: settings.restSeconds });
     });
   }
 });
@@ -203,13 +267,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (sender && sender.id !== chrome.runtime.id) return;
   if (message.action === 'EARLY_DONE') {
     console.log('[bg] EARLY_DONE received');
+    trackEvent('break_completed_early');
     chrome.storage.sync.get(defaultSettings, (settings) => {
       startWorkTimer(settings);
     });
   } else if (message.action === 'RESTART_TIMER') {
     console.log('[bg] RESTART_TIMER received');
+    trackEvent('timer_restarted');
     chrome.storage.sync.get(defaultSettings, (settings) => {
       startWorkTimer(settings);
     });
+  } else if (message.action === 'OPEN_POPUP') {
+    console.log('[bg] OPEN_POPUP received');
+    trackEvent('popup_opened');
   }
 });

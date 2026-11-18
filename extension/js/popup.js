@@ -1,4 +1,6 @@
 // Popup 逻辑
+chrome.runtime.sendMessage({ action: 'OPEN_POPUP' }); // GA4 tracking
+
 const defaultSettings = {
   workMinutes: 20,
   restSeconds: 20,
