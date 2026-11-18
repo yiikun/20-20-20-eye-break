@@ -27,11 +27,18 @@ const RING_RADIUS = 48;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS; // ≈ 301.6
 
 function showOverlay() {
-  if (!isContextValid()) return;
+  console.log('[content] showOverlay called');
+  if (!isContextValid()) {
+    console.log('[content] context invalid, skipping');
+    return;
+  }
 
   // 清除旧弹窗
   const existing = document.getElementById('e20-overlay');
-  if (existing) existing.remove();
+  if (existing) {
+    console.log('[content] removing old overlay');
+    existing.remove();
+  }
 
   // 随机选一条提示
   const tip = EYE_TIPS[Math.floor(Math.random() * EYE_TIPS.length)];
