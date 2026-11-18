@@ -36,10 +36,15 @@ async function getClientId() {
   });
 }
 
-// 发送 GA4 事件（使用 Measurement Protocol）
-async function trackEvent(eventName, params = {}) {
+// 发送 GA4 事件（使用 Measurement Protocol）- 非阻塞版本
+function trackEvent(eventName, params = {}) {
   try {
-    const clientId = await getClientId();
+    const clientId = chrome.storage.local.getSync?.(['ga_client_id'])?.ga_client_id || generateClientId();
+    if (!chrome.storage.local.getSync) {
+      // fallback: 先设置再获取（不等待）
+      const newId = generateClientId();
+      chrome.storage.local.set({ ga_client_id: newId }, () => {});
+    }
     const url = `https://www.google-analytics.com/mp/collect?measurement_id=${GA_MEASUREMENT_ID}&api_secret=${GA_API_SECRET}`;
     const payload = {
       client_id: clientId,
@@ -47,14 +52,15 @@ async function trackEvent(eventName, params = {}) {
         name: eventName,
         params: {
           ...params,
-          session_type: '1' // first visit
+          session_type: '1'
         }
       }]
     };
-    // use sendBeacon 如果可用（页面卸载时也能发送），否则用 fetch
+    // 使用 sendBeacon（不会阻塞主线程，且能在页面卸载时发送）
     if (navigator.sendBeacon) {
       navigator.sendBeacon(url, JSON.stringify(payload));
     } else {
+      // fallback 到 fetch（keepalive 确保请求在页面卸载后也能完成）
       fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
