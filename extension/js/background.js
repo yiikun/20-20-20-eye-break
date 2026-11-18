@@ -38,13 +38,21 @@ async function getClientId() {
 
 // 发送 GA4 事件（使用 Measurement Protocol）- 非阻塞版本
 function trackEvent(eventName, params = {}) {
-  try {
-    const clientId = chrome.storage.local.getSync?.(['ga_client_id'])?.ga_client_id || generateClientId();
-    if (!chrome.storage.local.getSync) {
-      // fallback: 先设置再获取（不等待）
-      const newId = generateClientId();
-      chrome.storage.local.set({ ga_client_id: newId }, () => {});
+  // 快速获取或生成 clientId
+  let clientId = null;
+  chrome.storage.local.get('ga_client_id', (data) => {
+    if (data.ga_client_id) {
+      clientId = data.ga_client_id;
+    } else {
+      clientId = generateClientId();
+      chrome.storage.local.set({ ga_client_id: clientId }, () => {});
     }
+    sendGAEvent(eventName, params, clientId);
+  });
+}
+
+function sendGAEvent(eventName, params, clientId) {
+  try {
     const url = `https://www.google-analytics.com/mp/collect?measurement_id=${GA_MEASUREMENT_ID}&api_secret=${GA_API_SECRET}`;
     const payload = {
       client_id: clientId,
