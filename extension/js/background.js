@@ -107,12 +107,31 @@ chrome.storage.local.get([STORAGE_KEY, PHASE_KEY], (data) => {
     if (phase === 'rest') {
       startRestTimer({ restSeconds: remainingSec }, true);
     } else {
-      // work phase：恢复 alarm（用 delayInMinutes，最小 1 分钟）
-      const remainingMinutes = Math.ceil(remainingSec / 60);
-      saveStateSync(remainingSec, now, state.endTime);
-      chrome.alarms.create('eye-break-work', { delayInMinutes: remainingMinutes });
-      console.log(`[bg] restored work alarm, fires in ${remainingMinutes}min (${remainingSec}s)`);
-    }
+      // work phase：恢复闹钟
+      const remainingSeconds = state.remainingSeconds;
+      if (remainingSeconds <= 60) {
+        // 少于1分钟用 setTimeout（alarm最小精度是1分钟）
+        console.log(`[bg] restoring work timer < 1min, using setTimeout`);
+        saveStateSync(remainingSeconds, now, state.endTime);
+        storePhase('work');
+        setTimeout(() => {
+          chrome.storage.sync.get(defaultSettings, (settings) => {
+            playSound();
+            showNotification(settings);
+            incrementBreakCount();
+            clearBadge();
+            showOverlayToAllTabs();
+            startRestTimer(settings);
+            trackEvent('break_started', { work_minutes: settings.workMinutes });
+          });
+        }, remainingMs);
+      } else {
+        // 超过1分钟用 alarm
+        const remainingMinutes = Math.ceil(remainingSec / 60);
+        saveStateSync(remainingSeconds, now, state.endTime);
+        chrome.alarms.create('eye-break-work', { delayInMinutes: remainingMinutes });
+        console.log(`[bg] restored work alarm, fires in ${remainingMinutes}min (${remainingSec}s)`);
+      }
   } else {
     console.log('[bg] no pending timer, starting fresh');
     chrome.storage.sync.get(defaultSettings, (settings) => {
