@@ -223,14 +223,23 @@ function storePhase(phase) {
 
 function showOverlayToAllTabs() {
   // 方案1：创建独立的悬浮窗（不依赖 content script）
-  chrome.windows.create({
-    url: chrome.runtime.getURL('overlay.html'),
-    width: 320,
-    height: 400,
-    type: 'popup',
-    focused: true
-  }, (win) => {
-    console.log(`[bg] created overlay window: ${win?.id}`);
+  // 获取屏幕尺寸计算位置（右上角）
+  chrome.windows.getAll({ populate: true }, (windows) => {
+    const focusedWindow = windows.find(w => w.focused) || windows[0];
+    const left = (focusedWindow?.left ?? 0) + (focusedWindow?.width ?? 800) - 340;
+    const top = (focusedWindow?.top ?? 0) + 60;
+
+    chrome.windows.create({
+      url: chrome.runtime.getURL('overlay.html'),
+      width: 340,
+      height: 420,
+      left: left,
+      top: top,
+      type: 'popup',
+      focused: false
+    }, (win) => {
+      console.log(`[bg] created overlay window at ${left},${top}: ${win?.id}`);
+    });
   });
 
   // 方案2：同时尝试通过 content script 发送（如果页面已加载了新扩展）
