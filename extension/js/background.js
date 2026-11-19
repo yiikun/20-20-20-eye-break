@@ -132,6 +132,7 @@ chrome.storage.local.get([STORAGE_KEY, PHASE_KEY], (data) => {
         chrome.alarms.create('eye-break-work', { delayInMinutes: remainingMinutes });
         console.log(`[bg] restored work alarm, fires in ${remainingMinutes}min (${remainingSec}s)`);
       }
+    }
   } else {
     console.log('[bg] no pending timer, starting fresh');
     chrome.storage.sync.get(defaultSettings, (settings) => {
