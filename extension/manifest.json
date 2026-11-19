@@ -6,7 +6,8 @@
   "permissions": [
     "storage",
     "alarms",
-    "notifications"
+    "notifications",
+    "scripting"
   ],
   "background": {
     "service_worker": "js/background.js"

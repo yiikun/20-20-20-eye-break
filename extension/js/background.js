@@ -221,14 +221,24 @@ function storePhase(phase) {
 }
 
 function showOverlayToAllTabs() {
+  // 方案1：创建独立的悬浮窗（不依赖 content script）
+  chrome.windows.create({
+    url: chrome.runtime.getURL('overlay.html'),
+    width: 320,
+    height: 400,
+    type: 'popup',
+    focused: true
+  }, (win) => {
+    console.log(`[bg] created overlay window: ${win?.id}`);
+  });
+
+  // 方案2：同时尝试通过 content script 发送（如果页面已加载了新扩展）
   chrome.tabs.query({}, (tabs) => {
-    console.log(`[bg] showing overlay to ${tabs.length} tabs`);
     for (const tab of tabs) {
-      // 跳过 popup/新标签页等扩展内部页面
       if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) continue;
       chrome.tabs.sendMessage(tab.id, { action: 'SHOW_OVERLAY' }, (response) => {
         if (chrome.runtime.lastError) {
-          console.log(`[bg] tab ${tab.id}: ${chrome.runtime.lastError.message}`);
+          // content script 未加载，忽略（我们已经创建了弹窗）
         } else {
           console.log(`[bg] tab ${tab.id}: overlay sent OK`);
         }
