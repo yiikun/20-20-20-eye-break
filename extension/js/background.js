@@ -252,6 +252,8 @@ function sendOverlay(tabId) {
 
 function injectAndShow(tabId) {
   if (!chrome.scripting || !chrome.scripting.executeScript) return;
+
+  // 第一步：把渲染弹窗的函数注入到页面中（会执行 content.js，注册 listener）
   chrome.scripting.executeScript(
     { target: { tabId }, files: ['js/content.js'] },
     () => {
@@ -259,14 +261,17 @@ function injectAndShow(tabId) {
         console.log(`[bg] tab ${tabId}: inject failed - ${chrome.runtime.lastError.message}`);
         return;
       }
-      // content.js 已加载，发送消息触发弹窗
-      chrome.tabs.sendMessage(tabId, { action: 'SHOW_OVERLAY' }, () => {
-        if (chrome.runtime.lastError) {
-          console.log(`[bg] tab ${tabId}: resend failed - ${chrome.runtime.lastError.message}`);
-        } else {
-          console.log(`[bg] tab ${tabId}: overlay sent after inject`);
+      // 第二步：直接调用 showOverlay（如果它存在）
+      chrome.scripting.executeScript(
+        { target: { tabId }, func: () => { if (typeof showOverlay === 'function') showOverlay(); } },
+        () => {
+          if (chrome.runtime.lastError) {
+            console.log(`[bg] tab ${tabId}: showOverlay call failed - ${chrome.runtime.lastError.message}`);
+          } else {
+            console.log(`[bg] tab ${tabId}: overlay shown via inject`);
+          }
         }
-      });
+      );
     }
   );
 }
