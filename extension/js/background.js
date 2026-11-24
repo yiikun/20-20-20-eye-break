@@ -222,36 +222,14 @@ function storePhase(phase) {
 }
 
 function showOverlayToAllTabs() {
-  // 方案1：创建独立的悬浮窗（不依赖 content script）
-  // 获取屏幕尺寸计算位置（右上角）
-  chrome.windows.getAll({ populate: true }, (windows) => {
-    const focusedWindow = windows.find(w => w.focused) || windows[0];
-    const left = (focusedWindow?.left ?? 0) + (focusedWindow?.width ?? 800) - 340;
-    const top = (focusedWindow?.top ?? 0) + 60;
-
-    chrome.windows.create({
-      url: chrome.runtime.getURL('overlay.html'),
-      width: 340,
-      height: 420,
-      left: left,
-      top: top,
-      type: 'popup',
-      focused: false
-    }, (win) => {
-      console.log(`[bg] created overlay window at ${left},${top}: ${win?.id}`);
-    });
-  });
-
-  // 方案2：同时尝试通过 content script 发送（如果页面已加载了新扩展）
+  // 向所有普通网页注入浮动提醒（content script 负责渲染）
   chrome.tabs.query({}, (tabs) => {
     for (const tab of tabs) {
+      // 跳过 chrome://、扩展页、新标签页等无法注入的页面
       if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) continue;
-      chrome.tabs.sendMessage(tab.id, { action: 'SHOW_OVERLAY' }, (response) => {
-        if (chrome.runtime.lastError) {
-          // content script 未加载，忽略（我们已经创建了弹窗）
-        } else {
-          console.log(`[bg] tab ${tab.id}: overlay sent OK`);
-        }
+      chrome.tabs.sendMessage(tab.id, { action: 'SHOW_OVERLAY' }, () => {
+        // 旧标签页（扩展重载前打开的）没有 content script，发送会失败，静默忽略
+        if (chrome.runtime.lastError) return;
       });
     }
   });
