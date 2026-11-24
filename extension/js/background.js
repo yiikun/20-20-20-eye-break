@@ -224,15 +224,51 @@ function storePhase(phase) {
 function showOverlayToAllTabs() {
   // 向所有普通网页注入浮动提醒（content script 负责渲染）
   chrome.tabs.query({}, (tabs) => {
+    console.log(`[bg] showOverlay: ${tabs.length} tabs found`);
     for (const tab of tabs) {
+      console.log(`[bg] tab ${tab.id} url=${tab.url}`);
       // 跳过 chrome://、扩展页、新标签页等无法注入的页面
-      if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) continue;
-      chrome.tabs.sendMessage(tab.id, { action: 'SHOW_OVERLAY' }, () => {
-        // 旧标签页（扩展重载前打开的）没有 content script，发送会失败，静默忽略
-        if (chrome.runtime.lastError) return;
-      });
+      if (!tab.url || !/^https?:/i.test(tab.url)) {
+        console.log(`[bg] tab ${tab.id}: skipped (protected page)`);
+        continue;
+      }
+      sendOverlay(tab.id);
     }
   });
+}
+
+function sendOverlay(tabId) {
+  chrome.tabs.sendMessage(tabId, { action: 'SHOW_OVERLAY' }, () => {
+    if (chrome.runtime.lastError) {
+      // 该标签页还没有 content script（扩展重载前打开、长时间未刷新）
+      // 先主动注入，再发送一次
+      console.log(`[bg] tab ${tabId}: no receiver, injecting content script`);
+      injectAndShow(tabId);
+      return;
+    }
+    console.log(`[bg] tab ${tabId}: overlay sent OK`);
+  });
+}
+
+function injectAndShow(tabId) {
+  if (!chrome.scripting || !chrome.scripting.executeScript) return;
+  chrome.scripting.executeScript(
+    { target: { tabId }, files: ['js/content.js'] },
+    () => {
+      if (chrome.runtime.lastError) {
+        console.log(`[bg] tab ${tabId}: inject failed - ${chrome.runtime.lastError.message}`);
+        return;
+      }
+      // content.js 已加载，发送消息触发弹窗
+      chrome.tabs.sendMessage(tabId, { action: 'SHOW_OVERLAY' }, () => {
+        if (chrome.runtime.lastError) {
+          console.log(`[bg] tab ${tabId}: resend failed - ${chrome.runtime.lastError.message}`);
+        } else {
+          console.log(`[bg] tab ${tabId}: overlay sent after inject`);
+        }
+      });
+    }
+  );
 }
 
 function updateBadge(seconds) {
