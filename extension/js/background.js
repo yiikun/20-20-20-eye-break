@@ -109,9 +109,10 @@ chrome.storage.local.get([STORAGE_KEY, PHASE_KEY], (data) => {
     } else {
       // work phase：恢复闹钟
       const remainingSeconds = state.remainingSeconds;
-      if (remainingSeconds <= 60) {
-        // 少于1分钟用 setTimeout（alarm最小精度是1分钟）
-        console.log(`[bg] restoring work timer < 1min, using setTimeout`);
+      // 只要剩余时间不足 5 分钟（300 秒），就用 setTimeout 精确倒计时
+      // 这样可以避免 Chrome alarm 最小精度 1 分钟 + service worker 休眠导致的延迟
+      if (remainingSec <= 300) {
+        console.log(`[bg] restoring work timer < 5min, using setTimeout`);
         saveStateSync(remainingSeconds, now, state.endTime);
         storePhase('work');
         setTimeout(() => {
@@ -126,7 +127,7 @@ chrome.storage.local.get([STORAGE_KEY, PHASE_KEY], (data) => {
           });
         }, remainingMs);
       } else {
-        // 超过1分钟用 alarm
+        // 超过 5 分钟用 alarm
         const remainingMinutes = Math.ceil(remainingSec / 60);
         saveStateSync(remainingSeconds, now, state.endTime);
         chrome.alarms.create('eye-break-work', { delayInMinutes: remainingMinutes });
