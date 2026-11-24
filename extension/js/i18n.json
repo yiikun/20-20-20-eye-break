@@ -1,0 +1,36 @@
+{
+  "zh": {
+    "title": "护眼提醒 · 视力守护",
+    "countdownLabel": "距离下次休息",
+    "countdownHintWorking": "正在专注工作中...",
+    "countdownHintSoon": "⚠️ 即将休息！",
+    "statToday": "今日休息",
+    "statStreak": "连续天数",
+    "settingWork": "工作时长（分钟）",
+    "settingRest": "休息时长（秒）",
+    "settingDistance": "远眺距离（英尺）",
+    "toggleNotification": "桌面通知",
+    "toggleSound": "提示音",
+    "toggleDarkMode": "暗黑模式",
+    "saveButton": "💾 保存设置",
+    "savedMessage": "✅ 已保存！",
+    "overlayTitle": "休息一下！"
+  },
+  "en": {
+    "title": "Eye Care Reminder",
+    "countdownLabel": "Until next break",
+    "countdownHintWorking": "Staying focused...",
+    "countdownHintSoon": "⚠️ Break coming up!",
+    "statToday": "Today's breaks",
+    "statStreak": "Day streak",
+    "settingWork": "Work duration (min)",
+    "settingRest": "Break length (sec)",
+    "settingDistance": "Look distance (feet)",
+    "toggleNotification": "Desktop notifications",
+    "toggleSound": "Sound alert",
+    "toggleDarkMode": "Dark mode",
+    "saveButton": "💾 Save settings",
+    "savedMessage": "✅ Saved!",
+    "overlayTitle": "Take a break!"
+  }
+}

@@ -1,26 +1,72 @@
 // Content script: 在页面上显示浮动提醒
 const STORAGE_KEY = 'timer_state';
+const LANG_KEY = 'popup_lang';
 
 // 上下文有效性检查（防止扩展重载后旧实例报错）
 function isContextValid() {
   return typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id;
 }
 
+// 界面语言
+const I18N = {
+  zh: {
+    title: '休息一下！',
+    subtitle: '远眺放松 20 秒',
+    unit: '秒',
+    breathe: '深呼吸',
+    done: '已完成，去休息',
+    close: '关闭',
+    tips: [
+      { emoji: '🌳', text: '找找窗外的绿植，数一数有几片叶子' },
+      { emoji: '☁️', text: '看一片云的形状，像什么动物？' },
+      { emoji: '🚗', text: '数远处车牌，看看能认出几个字' },
+      { emoji: '🏔️', text: '盯住最远处的物体，眯一只眼再看' },
+      { emoji: '🐦', text: '有没有鸟飞过？跟着它飞的方向看' },
+      { emoji: '🌙', text: '如果是晚上，看看星星或月亮的位置' },
+      { emoji: '👥', text: '远处有人走过吗？假装他是主角' },
+      { emoji: '🪟', text: '盯着玻璃反光里的远方发呆3秒' },
+      { emoji: '🎯', text: '找5个不同颜色的远处物体' },
+      { emoji: '🌅', text: '看天际线的交界处，闭上眼再睁开' },
+      { emoji: '😌', text: '深呼吸一次，让眼睛和心情一起放松' },
+      { emoji: '🦅', text: '想象自己是一只鹰，视野无限远' },
+    ],
+  },
+  en: {
+    title: 'Take a break!',
+    subtitle: 'Look far away for 20 seconds',
+    unit: 'sec',
+    breathe: 'Breathe',
+    done: 'Done, go rest',
+    close: 'Close',
+    tips: [
+      { emoji: '🌳', text: 'Find the green plants outside, count the leaves' },
+      { emoji: '☁️', text: 'What animal does that cloud look like?' },
+      { emoji: '🚗', text: 'Read the license plates in the distance' },
+      { emoji: '🏔️', text: 'Focus on the farthest object, squint one eye' },
+      { emoji: '🐦', text: 'Did a bird just fly by? Follow its direction' },
+      { emoji: '🌙', text: "If it's night, find the stars or moon" },
+      { emoji: '👥', text: "Someone walking far away? Make them the main character" },
+      { emoji: '🪟', text: 'Stare at the reflection in the glass for 3 seconds' },
+      { emoji: '🎯', text: 'Spot 5 objects of different colors far away' },
+      { emoji: '🌅', text: 'Look at the horizon, close your eyes, open them again' },
+      { emoji: '😌', text: 'Take a deep breath, relax your eyes and mind' },
+      { emoji: '🦅', text: 'Imagine you are an eagle with endless vision' },
+    ],
+  },
+};
+
+let currentLang = 'zh';
+
+// 加载语言设置（与 popup 保持一致）
+function loadLang() {
+  if (!isContextValid()) return;
+  chrome.storage.sync.get({ [LANG_KEY]: 'zh' }, (data) => {
+    currentLang = data[LANG_KEY] === 'en' ? 'en' : 'zh';
+  });
+}
+
 // 护眼提示语库（每次随机展示）
-const EYE_TIPS = [
-  { emoji: '🌳', text: '找找窗外的绿植，数一数有几片叶子' },
-  { emoji: '☁️', text: '看一片云的形状，像什么动物？' },
-  { emoji: '🚗', text: '数远处车牌，看看能认出几个字' },
-  { emoji: '🏔️', text: '盯住最远处的物体，眯一只眼再看' },
-  { emoji: '🐦', text: '有没有鸟飞过？跟着它飞的方向看' },
-  { emoji: '🌙', text: '如果是晚上，看看星星或月亮的位置' },
-  { emoji: '👥', text: '远处有人走过吗？假装他是主角' },
-  { emoji: '🪟', text: '盯着玻璃反光里的远方发呆3秒' },
-  { emoji: '🎯', text: '找5个不同颜色的远处物体' },
-  { emoji: '🌅', text: '看天际线的交界处，闭上眼再睁开' },
-  { emoji: '😌', text: '深呼吸一次，让眼睛和心情一起放松' },
-  { emoji: '🦅', text: '想象自己是一只鹰，视野无限远' },
-];
+const EYE_TIPS = I18N.zh.tips; // 兼容旧代码，实际使用 t('tips')
 
 // 圆环进度参数
 const RING_RADIUS = 48;
@@ -40,23 +86,29 @@ function showOverlay() {
     existing.remove();
   }
 
-  // 随机选一条提示
-  const tip = EYE_TIPS[Math.floor(Math.random() * EYE_TIPS.length)];
+  // 读取语言设置和计时状态
+  chrome.storage.sync.get({ [LANG_KEY]: 'zh' }, (langData) => {
+    currentLang = langData[LANG_KEY] === 'en' ? 'en' : 'zh';
+    const t = I18N[currentLang];
 
-  // 从 storage 读取实际休息时长和结束时间
-  let totalSeconds = 20;
-  let endTime = null;
-  chrome.storage.local.get(STORAGE_KEY, (data) => {
-    const state = data[STORAGE_KEY];
-    if (state && state.endTime) {
-      endTime = state.endTime;
-      totalSeconds = state.restSeconds || 20;
-    }
-    renderOverlay(tip, totalSeconds, endTime);
+    // 随机选一条提示
+    const tip = t.tips[Math.floor(Math.random() * t.tips.length)];
+
+    // 从 storage 读取实际休息时长和结束时间
+    let totalSeconds = 20;
+    let endTime = null;
+    chrome.storage.local.get(STORAGE_KEY, (data) => {
+      const state = data[STORAGE_KEY];
+      if (state && state.endTime) {
+        endTime = state.endTime;
+        totalSeconds = state.restSeconds || 20;
+      }
+      renderOverlay(t, tip, totalSeconds, endTime);
+    });
   });
 }
 
-function renderOverlay(tip, totalSeconds, endTime) {
+function renderOverlay(t, tip, totalSeconds, endTime) {
   const overlay = document.createElement('div');
   overlay.id = 'e20-overlay';
   overlay.innerHTML = `
@@ -67,7 +119,7 @@ function renderOverlay(tip, totalSeconds, endTime) {
           <span class="e20-tip-emoji">${tip.emoji}</span>
           <span class="e20-tip-text">${tip.text}</span>
         </div>
-        <button class="e20-close" title="关闭">✕</button>
+        <button class="e20-close" title="${t.close}">✕</button>
       </div>
 
       <!-- 中部：圆环进度 + 呼吸动画 -->
@@ -84,19 +136,19 @@ function renderOverlay(tip, totalSeconds, endTime) {
         </svg>
         <div class="e20-ring-content">
           <div class="e20-time" id="e20-time">${totalSeconds}</div>
-          <div class="e20-unit">秒</div>
+          <div class="e20-unit">${t.unit}</div>
         </div>
         <!-- 呼吸动画层（最后5秒显示） -->
         <div class="e20-breathe" id="e20-breathe" style="display:none">
           <div class="e20-breathe-ring"></div>
-          <div class="e20-breathe-text">深呼吸</div>
+          <div class="e20-breathe-text">${t.breathe}</div>
         </div>
       </div>
 
       <!-- 底部：完成按钮 -->
       <button class="e20-done" id="e20-done">
         <span class="e20-done-icon">✓</span>
-        已完成，去休息
+        ${t.done}
       </button>
     </div>
   `;

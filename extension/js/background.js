@@ -315,14 +315,24 @@ function showNotification(settings) {
     return;
   }
   const iconUrl = chrome.runtime.getURL('icons/icon128.png');
-  chrome.notifications.create({
-    type: 'basic',
-    iconUrl: iconUrl,
-    title: '20-20-20 护眼提醒',
-    message: `休息一下！远眺 ${settings.focusDistance} 英尺外 ${settings.restSeconds} 秒`,
-    priority: 2
+
+  // 读取语言设置（与 popup 一致）
+  chrome.storage.sync.get({ popup_lang: 'zh' }, (langData) => {
+    const isEn = langData.popup_lang === 'en';
+    const title = isEn ? '20-20-20 Eye Break' : '20-20-20 护眼提醒';
+    const message = isEn
+      ? `Take a break! Look ${settings.focusDistance} feet away for ${settings.restSeconds} seconds`
+      : `休息一下！远眺 ${settings.focusDistance} 英尺外 ${settings.restSeconds} 秒`;
+
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: iconUrl,
+      title: title,
+      message: message,
+      priority: 2
+    });
+    console.log('[bg] notification shown');
   });
-  console.log('[bg] notification shown');
 }
 
 function incrementBreakCount() {

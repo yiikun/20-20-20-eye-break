@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "20-20-20 Eye Break",
-  "version": "1.5.3",
+  "version": "1.6.0",
   "description": "保护视力，遵循 20-20-20 法则：每 20 分钟休息 20 秒，眺望 20 英尺外",
   "permissions": [
     "storage",

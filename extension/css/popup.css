@@ -285,3 +285,43 @@ body.dark .sponsor-card {
 body.dark .sponsor-hint {
   color: #666;
 }
+
+/* 头部和语言切换 */
+.popup-header {
+  position: relative;
+  text-align: center;
+}
+
+.popup-header h1 {
+  margin-top: 0;
+}
+
+.lang-toggle {
+  position: absolute;
+  top: -4px;
+  right: 0;
+  background: #e0e0e0;
+  color: #333;
+  border: none;
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.lang-toggle:hover {
+  background: #4fc3f7;
+  color: #fff;
+}
+
+body.dark .lang-toggle {
+  background: #0f3460;
+  color: #eee;
+}
+
+body.dark .lang-toggle:hover {
+  background: #4fc3f7;
+  color: #1a1a2e;
+}
